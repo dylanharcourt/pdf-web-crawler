@@ -128,7 +128,6 @@ class PdfBot:
         :return: None
         """
         og_url = self.soup.find("meta", property="og:url")
-        print(regex)
         for pdf_url in self.soup.find_all("a", href=re.compile(regex)):
             print(pdf_url)
             self.pdf_urls.append(urljoin(og_url["content"], pdf_url["href"])) if og_url else self.pdf_urls.append(

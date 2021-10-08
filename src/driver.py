@@ -5,7 +5,7 @@ import traceback
 
 class Driver:
     @staticmethod
-    def run_automation(automation_map: dict):
+    def run_table_automation(automation_map: dict):
         """
         Run a PDF scraping automation on a base URL.
         :automation_map: dict, map containing relevant properties
@@ -13,7 +13,7 @@ class Driver:
         """
         try:
             bot = PdfBot(automation_map["base_url"])
-            bot.parse_html_for_pdfs()
+            bot.parse_html_for_pdfs(automation_map["pdf_name_regex"])
             bot.download_pdfs(automation_map["pdf_download_dir"])
             for url, document in bot.extract_data_from_pdfs():
                 matches, dates = bot.find_matches_in_pdf(
@@ -24,7 +24,6 @@ class Driver:
                     },
                 ).values()
                 for match in matches:
-                    print(match)
                     match = Utils.replace_from_match(match_str=match, old_list=["$", "Costs and expenses:\n"])
                     match = Utils.replace_from_match(
                         match_str=match,
@@ -85,35 +84,8 @@ if __name__ == "__main__":
                 )
             },
         },
-        "table2": {
-            "base_url": "https://investor.apple.com/investor-relations/default.aspx/",
-            "pdf_name_regex": r"\(As-Filed\).pdf",
-            "pdf_download_dir": "output",
-            "pdf_data_regex": [r"(?s)(Products\n.+?)(?:(?:\r*\n{2})|Earnings per share:)", r"(?s)\d{4}"],
-            "pages": (3, 4),
-            "excel_file_path": "./output/company_10Q.xlsx",
-            "worksheet_name": "Apple Operations Statement",
-            "header": ["Apple 10Q - Consolidated Statements of Operations"],
-            "row_schema": {
-                k: []
-                for k in (
-                    "Products",
-                    "Services",
-                    "Total net sales",
-                    "Sales and marketing",
-                    "General and administrative",
-                    "European Commission fines",
-                    "Total costs and expenses",
-                    "Income from operations",
-                    "Other income (expense), net",
-                    "Income before income taxes",
-                    "Provision for income taxes",
-                    "Net income",
-                )
-            },
-        },
     }
 
     # run the automation for each table
     for automation_map in tables.values():
-        Driver.run_automation(automation_map)
+        Driver.run_table_automation(automation_map)
